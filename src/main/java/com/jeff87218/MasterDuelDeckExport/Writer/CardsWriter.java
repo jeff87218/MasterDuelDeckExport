@@ -18,24 +18,25 @@ public class CardsWriter {
 
     static {
         try {
-            cardMap = new Gson().fromJson(new JsonReader(new FileReader("ygocards.json")), new TypeToken<HashMap<Integer, YgoObject>>(){}.getType());
+            cardMap = new Gson().fromJson(new JsonReader(new FileReader("ygocards.json")), new TypeToken<HashMap<Integer, YgoObject>>() {
+            }.getType());
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    public void writeCSV(String fileName,List<Integer> mainDeck,List<Integer> extraDeck) throws IOException {
+    public void writeCSV(String fileName, List<Integer> mainDeck, List<Integer> extraDeck) throws IOException {
 
-        FileWriter fileWriter = new FileWriter(fileName+".csv");
+        FileWriter fileWriter = new FileWriter(fileName + ".csv");
         fileWriter.append("\"MainDeck\",\"ExtraDeck\"\n");
-        for(int i=0;i<mainDeck.size();i++){
-            if(i<extraDeck.size()) {
+        for (int i = 0; i < mainDeck.size(); i++) {
+            if (i < extraDeck.size()) {
                 fileWriter.append("\"").append(cardMap.get(mainDeck.get(i)).getEnName()).append("\"");
                 fileWriter.append(",");
                 fileWriter.append("\"").append(cardMap.get(extraDeck.get(i)).getEnName()).append("\"");
                 fileWriter.append("\n");
-            }else {
+            } else {
                 fileWriter.append("\"").append(cardMap.get(mainDeck.get(i)).getEnName()).append("\"");
                 fileWriter.append("\n");
             }
@@ -45,15 +46,15 @@ public class CardsWriter {
         Desktop.getDesktop().edit(new File(fileName + ".csv"));
     }
 
-    public void Clipboard(List<Integer> mainDeck,List<Integer> extraDeck) throws IOException {
+    public void writeClipboard(List<Integer> mainDeck, List<Integer> extraDeck) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         sb.append("MainDeck:\n");
-        for(int i=0;i<mainDeck.size();i++){
+        for (int i = 0; i < mainDeck.size(); i++) {
             sb.append("\"").append(cardMap.get(mainDeck.get(i)).getEnName()).append("\"\n");
         }
         sb.append("\nExtraDeck:\n");
-        for(int i=0;i<extraDeck.size();i++){
+        for (int i = 0; i < extraDeck.size(); i++) {
             sb.append("\"").append(cardMap.get(extraDeck.get(i)).getEnName()).append("\"\n");
 
         }
@@ -63,5 +64,23 @@ public class CardsWriter {
 
     }
 
+    public void writeYDK(String fileName, List<Integer> mainDeck, List<Integer> extraDeck) throws IOException {
+
+        FileWriter fileWriter = new FileWriter(fileName + ".ydk");
+        fileWriter.append("#main\n");
+        for (int i = 0; i < mainDeck.size(); i++) {
+            fileWriter.append(cardMap.get(mainDeck.get(i)).getId().toString());
+            fileWriter.append("\n");
+        }
+        fileWriter.append("#extra\n");
+
+        for (int i = 0; i < extraDeck.size(); i++) {
+            fileWriter.append(cardMap.get(extraDeck.get(i)).getId().toString());
+            fileWriter.append("\n");
+        }
+
+        fileWriter.flush();
+        fileWriter.close();
+    }
 
 }

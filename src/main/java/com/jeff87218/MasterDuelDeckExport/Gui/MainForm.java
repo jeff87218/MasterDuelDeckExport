@@ -7,6 +7,8 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinNT;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -17,7 +19,8 @@ public class MainForm extends JFrame {
     private JButton Button;
     private JPanel mainPanel;
     private JTextField textField1;
-    private JButton dumpToClipboardButton;
+    private JButton exportToClipboardButton;
+    private JButton exportToYDKButton;
 
     static WinNT.HANDLE handle;
     static int processId;
@@ -79,7 +82,7 @@ public class MainForm extends JFrame {
             }
         });
 
-        dumpToClipboardButton.addActionListener(e -> {
+        exportToClipboardButton.addActionListener(e -> {
             List<Integer> mainDeckList = new ArrayList<>();
             int index = 0x0;
             Pointer mainDeck = MemoryManipulate.findDynAddressPointer(processId, handle, new int[]{0xB8, 0x10, 0xF8, 0x1E8, 0x150, 0x40, 0x20}, 0x01F690E8, "GameAssembly.dll");
@@ -109,7 +112,7 @@ public class MainForm extends JFrame {
             }
 
             try {
-                cardsWriter.Clipboard(mainDeckList, extraDeckList);
+                cardsWriter.writeClipboard(mainDeckList, extraDeckList);
                 JOptionPane.showMessageDialog(this, "Done!");
 
             } catch (IOException ex) {
@@ -117,6 +120,44 @@ public class MainForm extends JFrame {
             }
 
         });
+        exportToYDKButton.addActionListener(e -> {
+                List<Integer> mainDeckList = new ArrayList<>();
+                int index = 0x0;
+                Pointer mainDeck = MemoryManipulate.findDynAddressPointer(processId, handle, new int[]{0xB8, 0x10, 0xF8, 0x1E8, 0x150, 0x40, 0x20}, 0x01F690E8, "GameAssembly.dll");
+                for (int i = 0; i < 60; i++) {
+                    Memory memory = MemoryManipulate.readMemory(handle, mainDeck.share(index), 4);
+                    int cardID = memory.getShort(0);
+                    memory.close();
+                    if (cardID == 0) {
+                        break;
+                    }
+                    index += 0x18;
+                    mainDeckList.add(cardID);
+                }
+
+                List<Integer> extraDeckList = new ArrayList<>();
+                index = 0x0;
+                Pointer extraDeck = MemoryManipulate.findDynAddressPointer(processId, handle, new int[]{0xB8, 0x10, 0xF8, 0x1E8, 0x150, 0x10, 0x20}, 0x01F690E8, "GameAssembly.dll");
+                for (int i = 0; i < 15; i++) {
+                    Memory memory = MemoryManipulate.readMemory(handle, extraDeck.share(index), 4);
+                    int cardID = memory.getShort(0);
+                    memory.close();
+                    if (cardID == 0) {
+                        break;
+                    }
+                    index += 0x18;
+                    extraDeckList.add(cardID);
+                }
+
+                try {
+                    cardsWriter.writeYDK(textField1.getText(), mainDeckList, extraDeckList);
+                    JOptionPane.showMessageDialog(this, "Done!");
+
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            });
     }
 
 
