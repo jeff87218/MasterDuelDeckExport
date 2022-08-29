@@ -19,10 +19,10 @@ you can also export to ydk file for EDOPRO(Ygopro)
 # Future
 Language support
 
-Dump option
+export option
 
 Import deck to MasterDuel
 
-Dump to json,xml etc....
+export to json,xml etc....
 
-Dump Konami Card IDs
+export Konami Card IDs
